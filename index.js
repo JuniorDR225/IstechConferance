@@ -35,7 +35,7 @@ async function verifyPDF(filePath) {
 
 // Endpoint pour générer le PDF
 const fontkit = require('@pdf-lib/fontkit'); // Importer fontkit
-
+console.log("ok")
 app.post('/generate-pdf', async (req, res) => {
   console.log("ok")
   try {
