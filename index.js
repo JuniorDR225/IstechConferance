@@ -37,9 +37,10 @@ async function verifyPDF(filePath) {
 const fontkit = require('@pdf-lib/fontkit'); // Importer fontkit
 
 app.post('/generate-pdf', async (req, res) => {
+  console.log("ok")
   try {
     const { firstName, lastName, email } = req.body;
-
+  console.log(firstName, lastName, email)
     if (!firstName || !lastName || !email) {
       throw new Error('Les champs firstName, lastName et email sont obligatoires.');
     }
