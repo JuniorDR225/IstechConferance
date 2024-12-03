@@ -112,7 +112,7 @@ app.post('/generate-pdf', async (req, res) => {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error('Erreur lors de l\'envoi de l\'email :', error.message);
-        return res.status(500).send({ error: 'Échec de l\'envoi de l\'e-mail.' });
+        return res.status(501).send({ error: 'Échec de l\'envoi de l\'e-mail.' });
       }
       res.status(200).send({ message: 'PDF généré et envoyé avec succès par e-mail.' });
     });
