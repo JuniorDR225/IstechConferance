@@ -56,7 +56,7 @@ app.post('/generate-pdf', async (req, res) => {
     // Enregistrer fontkit
     pdfDoc.registerFontkit(fontkit);
 
-    // Charger la police personnalisée
+    // Charger la police personnalisée 
     const fontPath = path.join(__dirname, 'Poppins-Bold.ttf'); // Assurez-vous que ce fichier existe
     if (!fs.existsSync(fontPath)) {
       throw new Error('Le fichier de police est introuvable.');
