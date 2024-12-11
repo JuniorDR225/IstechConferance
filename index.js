@@ -3,7 +3,8 @@ const { PDFDocument, rgb } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
-const nodemailer = require('nodemailer'); // Pour envoyer des emails
+const nodemailer = require('nodemailer');
+const fontkit = require('@pdf-lib/fontkit');
 
 const app = express();
 
@@ -22,31 +23,131 @@ app.use(cors({ origin: '*' }));
 // Middleware pour parser le corps des requêtes JSON
 app.use(express.json());
 
-// Vérification du PDF
-async function verifyPDF(filePath) {
-  try {
-    const pdfBytes = fs.readFileSync(filePath);
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    console.log('Le PDF est valide.');
-  } catch (error) {
-    console.error('Le PDF est corrompu :', error.message);
-  }
-}
+// Tableau des utilisateurs autorisés
+// Tableau des utilisateurs autorisés sans e-mail
+const authorizedUsers = [
+  { firstName: 'junior' },
+  { firstName: 'KOUADIO' },
+  { firstName: 'SILUE' },
+  { firstName: 'AKA' },
+  { firstName: 'KOUAHO' },
+  { firstName: 'SOGODOGO' },
+  { firstName: 'COULIBALY' },
+  { firstName: 'SORO' },
+  { firstName: 'BERTHE' },
+  { firstName: 'OUATTARA' },
+  { firstName: 'TRAORE' },
+  { firstName: 'N’GUESSAN' },
+  { firstName: 'SIDIBE' },
+  { firstName: 'KONE' },
+  { firstName: 'KONE' },
+  { firstName: 'TRIA' },
+  { firstName: 'SAGOU' },
+  { firstName: 'GNANKAN' },
+  { firstName: 'BAMBA' },
+  { firstName: 'KANGA' },
+  { firstName: 'KOUACOU' },
+  { firstName: 'ASSOUKOU' },
+  { firstName: 'DIARRA' },
+  { firstName: 'OUATTARA' },
+  { firstName: 'DIARRASSOUBA' },
+  { firstName: 'THIEMELE' },
+  { firstName: 'KOFFI' },
+  { firstName: 'N’ZI' },
+  { firstName: 'ASSALE' },
+  { firstName: 'KOUAME' },
+  { firstName: 'NANDO' },
+  { firstName: 'SIDIBE' },
+  { firstName: 'AMANGOUA' },
+  { firstName: 'TANO' },
+  { firstName: 'KONE' },
+  { firstName: 'OUATTARA' },
+  { firstName: 'TOURE' },
+  { firstName: 'DIABAGATE' },
+  { firstName: 'VAHBI' },
+  { firstName: 'OUEDRAOGO' },
+  { firstName: 'SANGARE' },
+  { firstName: 'SIDIBE' },
+  { firstName: 'OUATTARA' },
+  { firstName: 'SYLLA' },
+  { firstName: 'DIALLO' },
+  { firstName: 'BONKOUNGOU' },
+  { firstName: 'ADIOTSO' },
+  { firstName: 'KOUADIO' },
+  { firstName: 'M’BROH' },
+  { firstName: 'BAMBA' },
+  { firstName: 'SABI' },
+  { firstName: 'BAHOU' },
+  { firstName: 'MAMBO' },
+  { firstName: 'OUAYOGODE' },
+  { firstName: 'N’GUESSAN' },
+  { firstName: 'DOH' },
+  { firstName: 'YOBOU' },
+  { firstName: 'BILSON' },
+  { firstName: 'GOH' },
+  { firstName: 'KONATE' },
+  { firstName: 'KOROGO' },
+  { firstName: 'CISSE' },
+  { firstName: 'ZOUKROU' },
+  { firstName: 'TIONON' },
+  { firstName: 'ADOU' },
+  { firstName: 'ABLI' },
+  { firstName: 'TRAORE' },
+  { firstName: 'OSSEY' },
+  { firstName: 'KOFFI' },
+  { firstName: 'OUATTARA' },
+  { firstName: 'KOUAKOU' },
+  { firstName: 'ASSAMBAN' },
+  { firstName: 'N’DIAYE' },
+  { firstName: 'KONATE' },
+  { firstName: 'SEKONGO' },
+  { firstName: 'KOAMBA' },
+  { firstName: 'KOFFI' },
+  { firstName: 'DIALLO' },
+  { firstName: 'DIALLO' },
+  { firstName: 'GNAMIEN' },
+  { firstName: 'TRA LOU' },
+  { firstName: 'DIABY' },
+  { firstName: 'TITI' },
+  { firstName: 'ATILADE' },
+  { firstName: 'DJIBO' },
+  { firstName: 'TRAORE' },
+  { firstName: 'KACOU' },
+  { firstName: 'DIEMAN' },
+  { firstName: 'YAVO' },
+  { firstName: 'AGOUA' },
+  { firstName: 'KOFFI' },
+  { firstName: 'KINIMO' },
+  { firstName: 'DIAMOUTENE' },
+  { firstName: 'KOUAKOU' },
+  { firstName: 'YODE' },
+  { firstName: 'CISSE' },
+  { firstName: 'DEKPETI' },
+];
+
+
 
 // Endpoint pour générer le PDF
-const fontkit = require('@pdf-lib/fontkit'); // Importer fontkit
-console.log("ok")
 app.post('/generate-pdf', async (req, res) => {
-  console.log("ok")
   try {
     const { firstName, lastName, email } = req.body;
-  console.log(firstName, lastName, email)
+
     if (!firstName || !lastName || !email) {
       throw new Error('Les champs firstName, lastName et email sont obligatoires.');
     }
 
+    // Vérification si l'utilisateur est autorisé
+    const isAuthorized = authorizedUsers.some(
+      (user) =>
+        user.firstName.toLowerCase() === firstName.toLowerCase() 
+    );
+
+    if (!isAuthorized) {
+      return res.status(403).send({ error: 'Accès refusé. Vous n’êtes pas autorisé à générer un PDF.' });
+    }
+
     // Charger le modèle PDF
-    const pdfTemplatePath = path.join(__dirname, 'certificat.pdf');
+    const pdfTemplatePath = path.join(__dirname, 'certificat1.pdf');
     if (!fs.existsSync(pdfTemplatePath)) {
       throw new Error('Le modèle PDF est introuvable.');
     }
@@ -56,8 +157,8 @@ app.post('/generate-pdf', async (req, res) => {
     // Enregistrer fontkit
     pdfDoc.registerFontkit(fontkit);
 
-    // Charger la police personnalisée 
-    const fontPath = path.join(__dirname, 'Poppins-Bold.ttf'); // Assurez-vous que ce fichier existe
+    // Charger la police personnalisée
+    const fontPath = path.join(__dirname, 'poppins-bold.ttf');
     if (!fs.existsSync(fontPath)) {
       throw new Error('Le fichier de police est introuvable.');
     }
@@ -71,33 +172,31 @@ app.post('/generate-pdf', async (req, res) => {
 
     // Ajouter du texte centré horizontalement
     const text = `${firstName.toUpperCase()} ${lastName.toUpperCase()}`;
-    const textWidth = customFont.widthOfTextAtSize(text, 50); // Largeur du texte
-    const x = (width - textWidth) / 2; // Centrer horizontalement
+    const textWidth = customFont.widthOfTextAtSize(text, 50);
+    const x = (width - textWidth) / 2;
 
+    // Ajustement de la position du texte
     firstPage.drawText(text, {
-      x: x, // Position centrée
-      y: height - 700, // Position verticale
-      size: 50, // Taille de la police
-      font: customFont, // Utiliser la police personnalisée
-      color: rgb(0, 0, 0), // Couleur du texte
+      x: x,
+      y: height - 600, // Position ajustée pour que le texte soit plus haut
+      size: 50,
+      font: customFont,
+      color: rgb(0, 0, 0),
     });
 
-    // Enregistrez le fichier PDF généré
+    // Enregistrer le fichier PDF généré
     const pdfBytes = await pdfDoc.save();
-
-    // Chemin de stockage sur le serveur
     const pdfFileName = `${firstName}_${lastName}_certificat.pdf`;
     const pdfFilePath = path.join(__dirname, 'generated_certificates', pdfFileName);
 
-    // Créer le dossier "generated_certificates" s'il n'existe pas
     if (!fs.existsSync(path.dirname(pdfFilePath))) {
       fs.mkdirSync(path.dirname(pdfFilePath));
     }
     fs.writeFileSync(pdfFilePath, pdfBytes);
 
-    // Envoi de l'email avec le fichier PDF en pièce jointe
+    // Envoi de l'e-mail avec le PDF en pièce jointe
     const mailOptions = {
-      from: 'votre-email@gmail.com',
+      from: 'textjuniortexte@gmail.com',
       to: email,
       subject: 'Votre certificat personnalisé',
       text: 'Veuillez trouver ci-joint votre certificat.',
@@ -111,8 +210,8 @@ app.post('/generate-pdf', async (req, res) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.error('Erreur lors de l\'envoi de l\'email :', error.message);
-        return res.status(501).send({ error: 'Échec de l\'envoi de l\'e-mail.' });
+        console.error('Erreur lors de l\'envoi de l\'e-mail :', error.message);
+        return res.status(500).send({ error: 'Échec de l\'envoi de l\'e-mail.' });
       }
       res.status(200).send({ message: 'PDF généré et envoyé avec succès par e-mail.' });
     });
@@ -123,7 +222,6 @@ app.post('/generate-pdf', async (req, res) => {
   }
 });
 
-  
 // Démarrer le serveur
 app.listen(3000, () => {
   console.log('Serveur démarré sur http://localhost:3000');
