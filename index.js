@@ -26,6 +26,7 @@ app.use(express.json());
 // Tableau des utilisateurs autorisés
 const authorizedUsers = [
   { firstName: 'junior' },
+  { firstName: 'DEMBELE' },
   { firstName: 'KOUADIO' },
   { firstName: 'SILUE' },
   { firstName: 'AKA' },
