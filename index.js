@@ -136,7 +136,6 @@ app.post('/generate-pdf', async (req, res) => {
     }
 
     // Vérification si l'utilisateur est autorisé
-    let name
 let name;
 const isAuthorized = authorizedUsers.some((user) => {
   name = user.firstName;
